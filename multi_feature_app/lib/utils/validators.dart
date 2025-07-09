@@ -18,4 +18,25 @@ class Validators {
     }
     return null;
   }
+
+  // New validators for DL4D registration screen
+  static String? validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Name is required';
+    }
+    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+      return 'Name can only contain letters and spaces';
+    }
+    return null;
+  }
+
+  static String? validatePhone(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Phone is required';
+    }
+    if (!RegExp(r'^\+?[\d\s-]{10,}$').hasMatch(value)) {
+      return 'Enter a valid phone number';
+    }
+    return null;
+  }
 }

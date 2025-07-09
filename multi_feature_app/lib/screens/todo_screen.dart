@@ -69,6 +69,7 @@ class _TodoAppScreenState extends State<TodoAppScreen> {
                   itemCount: tasks.length,
                   itemBuilder: (context, index) {
                     final task = tasks[index];
+                    // Task with delete option
                     return TaskTile(
                       task: task,
                       onDelete: () async {
