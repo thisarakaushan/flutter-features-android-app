@@ -82,4 +82,16 @@ class AuthService {
   Future<void> signOut() async {
     await _auth.signOut();
   }
+
+  // Method to resend verification email
+  Future<void> resendVerificationEmail() async {
+    final user = _auth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    } else {
+      throw Exception(
+        'No user is currently signed in or email is already verified.',
+      );
+    }
+  }
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "937458398651",
+    "project_id": "multi-feature-app-e708c",
+    "storage_bucket": "multi-feature-app-e708c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:937458398651:android:936110a4694a7af443409e",
+        "android_client_info": {
+          "package_name": "com.shan.multi_feature_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSxvVXtwYr_Bk-IsvvWEjNDCly_4wcTp4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 // Routes
 import '../../routes.dart';
@@ -111,13 +112,22 @@ class _DL4DRegistrationScreenState extends State<DL4DRegistrationScreen> {
           _gender ?? 'Male',
           _profileImage,
         );
-
-        if (!mounted) return;
-
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration Successful!')),
-        );
+        // Check email verification status
+        final user = firebase_auth.FirebaseAuth.instance.currentUser;
+        if (user != null && !user.emailVerified) {
+          // ignore: use_build_context_synchronously
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please verify your email before proceeding.'),
+              duration: Duration(seconds: 5),
+            ),
+          );
+          // Optionally, you can poll for verification or wait for user action
+          // For now, stay on this screen until verified
+        } else {
+          // ignore: use_build_context_synchronously
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        }
       } catch (e) {
         setState(() {
           _errorMessage = e.toString();
@@ -143,7 +153,7 @@ class _DL4DRegistrationScreenState extends State<DL4DRegistrationScreen> {
                     radius: 50,
                     backgroundImage: _profileImage != null
                         ? FileImage(_profileImage!)
-                        : const AssetImage('assets/default_profile.png')
+                        : const AssetImage('assets/default_profile_image.png')
                               as ImageProvider,
                     child: _profileImage == null
                         ? const Icon(Icons.camera_alt, size: 30)
@@ -282,9 +292,6 @@ class _DL4DRegistrationScreenState extends State<DL4DRegistrationScreen> {
                   onPressed: () async {
                     try {
                       await _authService.signInAnonymously();
-
-                      if (!mounted) return;
-
                       // ignore: use_build_context_synchronously
                       Navigator.pushReplacementNamed(context, AppRoutes.home);
                       // ignore: use_build_context_synchronously
