@@ -6,25 +6,40 @@ import '../utils/constants.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final Color? color;
+  final bool isLoading;
+  final bool enabled;
 
   const CustomButton({
     super.key,
     required this.text,
     required this.onPressed,
-    Color? color,
+    this.color,
+    this.isLoading = false,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: onPressed,
+      onPressed: (enabled && !isLoading) ? onPressed : null,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppConstants.primaryColor,
+        backgroundColor: color ?? AppConstants.primaryColor,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         textStyle: const TextStyle(fontSize: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      child: Text(text),
+      child: isLoading
+          ? const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : Text(text),
     );
   }
 }
