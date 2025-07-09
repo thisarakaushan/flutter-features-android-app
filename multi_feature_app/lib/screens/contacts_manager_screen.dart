@@ -36,6 +36,9 @@ class _ContactsManagerScreenState extends State<ContactsManagerScreen> {
       await _contactService.addContact(contact);
       _nameController.clear();
       _phoneController.clear();
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Contact Added!')));
