@@ -12,3 +12,6 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Firebase config (ignore sensitive credentials)
+multi_feature_app/android/app/google-services.json
