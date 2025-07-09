@@ -126,18 +126,26 @@ class _HomeScreenState extends State<HomeScreen> {
             CustomButton(
               text: 'To-Do List',
               onPressed: () => Navigator.pushNamed(context, AppRoutes.todo),
+              color: Colors.blue[400],
+              isLoading: false,
             ),
+            const SizedBox(height: 16), // Space between buttons
             CustomButton(
               text: 'BMI Calculator',
               onPressed: () => Navigator.pushNamed(context, AppRoutes.bmi),
+              color: Colors.green[400],
             ),
+            const SizedBox(height: 16), // Space between buttons
             CustomButton(
               text: 'Counter with Theme Switcher',
               onPressed: () => Navigator.pushNamed(context, AppRoutes.counter),
+              color: Colors.grey[600],
             ),
+            const SizedBox(height: 16), // Space between buttons
             CustomButton(
               text: 'Contacts Manager',
               onPressed: () => Navigator.pushNamed(context, AppRoutes.contacts),
+              color: Colors.orange[400],
             ),
           ],
         ),
