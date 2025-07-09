@@ -1,4 +1,4 @@
-# 📱 Multi Feature Flutter Android App
+# 📱 Multi-Feature Flutter Android App
 
 A mobile application built using Flutter that includes multiple mini projects in a single app, with login/register authentication and Firebase integration. The app is designed for Android devices.
 
@@ -66,7 +66,7 @@ A mobile application built using Flutter that includes multiple mini projects in
 |   ├── constants.dart
 │   └── validators.dart
 
-``
+```
 
 ---
 
@@ -108,7 +108,7 @@ A mobile application built using Flutter that includes multiple mini projects in
 - Enable **NDK (Side by side)** → Click the ⚙️ (gear icon) → **Show Package Details**
 - ✅ Install version **27.0.12077973**
 
-Or install manually via command line:
+Or install manually via the command line:
 
 ```bash
 sdkmanager "ndk;27.0.12077973"
