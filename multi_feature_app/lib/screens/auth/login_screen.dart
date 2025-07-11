@@ -1,5 +1,6 @@
 // Packages
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // Routes
 import 'package:multi_feature_app/routes.dart';
@@ -28,6 +29,48 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
   String? _errorMessage;
 
+  // Method for password reset
+  Future<void> _resetPassword() async {
+    if (_emailController.text.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter your email to reset password.';
+      });
+      return;
+    }
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: _emailController.text.trim(),
+      );
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password reset email sent! Check your inbox.'),
+        ),
+      );
+    } catch (e) {
+      String message = 'An error occurred';
+      if (e is FirebaseAuthException) {
+        switch (e.code) {
+          case 'user-not-found':
+            message = 'No user found with that email.';
+            break;
+          case 'invalid-email':
+            message = 'Invalid email format.';
+            break;
+          case 'network-request-failed':
+            message = 'Check your internet connection.';
+            break;
+          default:
+            message = e.message ?? message;
+        }
+      }
+      setState(() {
+        _errorMessage = message;
+      });
+    }
+  }
+
   void _login() async {
     if (_formKey.currentState!.validate()) {
       try {
@@ -43,9 +86,35 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
         ).showSnackBar(const SnackBar(content: Text('Login Successful!')));
       } catch (e) {
+        String message = "An unknown error occurred";
+        if (e is FirebaseAuthException) {
+          switch (e.code) {
+            case 'invalid-credential':
+              message = 'Invalid email or password';
+              break;
+            case 'user-not-found':
+              message = 'No user found for that email';
+              break;
+            case 'wrong-password':
+              message = 'Incorrect password';
+              break;
+            case 'network-request-failed':
+              message = 'Check your internet connection';
+              break;
+            default:
+              message = e.message ?? message;
+          }
+        }
+
         setState(() {
-          _errorMessage = e.toString();
+          _errorMessage = message;
         });
+
+        // if (mounted) {
+        //   ScaffoldMessenger.of(
+        //     context,
+        //   ).showSnackBar(SnackBar(content: Text(message)));
+        // }
       }
     }
   }
@@ -75,6 +144,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
               const SizedBox(height: 20),
               CustomButton(text: 'Login', onPressed: _login),
+              TextButton(
+                onPressed: _resetPassword,
+                child: const Text('Forgot Password?'),
+              ),
               TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context, AppRoutes.register);

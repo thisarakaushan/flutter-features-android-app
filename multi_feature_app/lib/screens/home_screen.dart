@@ -27,12 +27,16 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Map<String, dynamic>? _userDetails;
 
+  // Initialize user details
+  // This will be used to display user information in the profile dialog
   @override
   void initState() {
     super.initState();
     _loadUserDetails();
   }
 
+  // Load user details from Firestore
+  // This method fetches the current user's details from Firestore
   Future<void> _loadUserDetails() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -45,6 +49,25 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+
+  // Save profile changes
+  // This method saves the edited fields back to Firestore
+  // Future<void> _saveField(String field, String value) async {
+  //   final user = FirebaseAuth.instance.currentUser;
+  //   if (user != null) {
+  //     await FirebaseFirestore.instance.collection('users').doc(user.uid).update(
+  //       {field: value},
+  //     );
+  //     setState(() {
+  //       _userDetails?[field] = value;
+  //     });
+  //     if (!mounted) return;
+
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Profile updated successfully!')),
+  //     );
+  //   }
+  // }
 
   void _showProfile() {
     showDialog(
@@ -75,13 +98,41 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       'Name: ${_userDetails!['firstName']} ${_userDetails!['lastName']}',
                     ),
-                    Text('Phone: ${_userDetails!['phone']}'),
+                    Text('Phone: ${_userDetails!['phone'] ?? ''}'),
                     Text('User Code: ${_userDetails!['userCode']}'),
                     Text('Email: ${_userDetails!['email']}'),
                     Text('Birthday: ${_userDetails!['birthday']}'),
-                    Text('Department: ${_userDetails!['department']}'),
-                    Text('Education: ${_userDetails!['education']}'),
+                    Text(
+                      'Department: ${_userDetails!['department'] ?? 'None'}',
+                    ),
+                    Text('Education: ${_userDetails!['education'] ?? 'None'}'),
                     Text('Gender: ${_userDetails!['gender']}'),
+                    const SizedBox(height: 10),
+                    Text('Password: ********'), // Placeholder for password
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          await FirebaseAuth.instance.sendPasswordResetEmail(
+                            email: _userDetails!['email'],
+                          );
+                          // ignore: use_build_context_synchronously
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Password reset email sent! Check your inbox.',
+                              ),
+                            ),
+                          );
+                        } catch (e) {
+                          // ignore: use_build_context_synchronously
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: ${e.toString()}')),
+                          );
+                        }
+                      },
+                      child: const Text('Change Password'),
+                    ),
                   ],
                 ),
               ),
@@ -89,9 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
           TextButton(
             onPressed: () async {
               await AuthService().signOut();
-
               if (!mounted) return;
-
               // ignore: use_build_context_synchronously
               Navigator.pushReplacementNamed(context, AppRoutes.login);
             },
@@ -129,19 +178,19 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.blue[400],
               isLoading: false,
             ),
-            const SizedBox(height: 16), // Space between buttons
+            const SizedBox(height: 16),
             CustomButton(
               text: 'BMI Calculator',
               onPressed: () => Navigator.pushNamed(context, AppRoutes.bmi),
               color: Colors.green[400],
             ),
-            const SizedBox(height: 16), // Space between buttons
+            const SizedBox(height: 16),
             CustomButton(
               text: 'Counter with Theme Switcher',
               onPressed: () => Navigator.pushNamed(context, AppRoutes.counter),
               color: Colors.grey[600],
             ),
-            const SizedBox(height: 16), // Space between buttons
+            const SizedBox(height: 16),
             CustomButton(
               text: 'Contacts Manager',
               onPressed: () => Navigator.pushNamed(context, AppRoutes.contacts),
@@ -151,5 +200,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }
