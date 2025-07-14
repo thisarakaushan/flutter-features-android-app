@@ -19,7 +19,23 @@ A single Flutter project combining:
 
 > 📦 Path: `multi_feature_app/`
 
-Explore the full README and setup instructions inside the project folder above.
+---
+
+### 2. [User List App](https://github.com/thisarakaushan/flutter-features-android-app/tree/main/user_list_app)
+
+A Flutter app that fetches and displays users from a public API with profile pictures, names, and email addresses.
+
+- 🌐 API integration using `http`
+- 👤 Scrollable list of users with avatars and contact info
+- 🔄 Loading & error handling
+- 📦 Clean folder structure with models, services, and reusable widgets
+
+> 📦 Path: `user_list_app/`
+
+---
+
+
+Explore the full README and setup instructions inside the project folders above.
 
 ---
 
