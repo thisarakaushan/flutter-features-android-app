@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "914354643599",
+    "project_id": "user-list-app-3462c",
+    "storage_bucket": "user-list-app-3462c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:914354643599:android:b9bc7c593b97aa88bbc6fa",
+        "android_client_info": {
+          "package_name": "com.shan.user_list_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-TZFe8rG0MF1gI8NVLAd38NJo4LTPUUE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
