@@ -29,6 +29,7 @@ class _UserListScreenState extends State<UserListScreen> {
   bool _hasMore = true;
   String? _errorMessage;
   final ScrollController _scrollController = ScrollController();
+  int _totalPages = 2; // Default to 2 pages, will be updated after first fetch
 
   @override
   void initState() {
@@ -39,6 +40,9 @@ class _UserListScreenState extends State<UserListScreen> {
 
   // Fetch users from API
   Future<void> _fetchUsers({bool isRefresh = false}) async {
+    // Prevents multiple simultaneous API calls and stops fetching when no more data is available.
+    if (_isLoadingMore || (!_hasMore && !isRefresh)) return;
+
     // If refreshing, reset the state
     if (isRefresh) {
       setState(() {
@@ -48,8 +52,6 @@ class _UserListScreenState extends State<UserListScreen> {
         _errorMessage = null;
       });
     }
-    // If already loading more or no more data, return early
-    if (_isLoadingMore || !_hasMore) return;
 
     // Set loading state
     setState(() {
@@ -57,13 +59,30 @@ class _UserListScreenState extends State<UserListScreen> {
     });
 
     try {
+      print('Fetching page $_currentPage...');
+
       // Fetch users from the API
-      final newUsers = await _apiService.fetchUsers(_currentPage);
+      // final newUsers = await _apiService.fetchUsers(_currentPage);
+      final result = await _apiService.fetchUsers(_currentPage);
+
+      // Extract users and total pages from the result
+      final List<User> newUsers = result['users'] as List<User>;
+
+      final int totalPages = result['total_pages'] as int;
+
       // Update the state with the new users
       setState(() {
         _users.addAll(newUsers);
-        _currentPage++;
-        _hasMore = newUsers.isNotEmpty;
+        _totalPages = totalPages; // Update total pages from the API response
+
+        _currentPage++; // Increment AFTER checking for hasMore
+
+        // Update hasMore based on current page and total pages
+        _hasMore = _currentPage <= _totalPages;
+
+        // Check if there are more users to load
+        // _hasMore = newUsers.isNotEmpty;
+
         _isLoadingMore = false;
       });
     } catch (e) {
@@ -72,14 +91,21 @@ class _UserListScreenState extends State<UserListScreen> {
         _isLoadingMore = false;
       });
     }
+    print('Total users loaded: ${_users.length}');
   }
 
   // Handle scroll events to load more users
   void _onScroll() {
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      _fetchUsers();
+        _scrollController.position.maxScrollExtent - 300) {
+      if (!_isLoadingMore && _hasMore) {
+        _fetchUsers();
+        // print('Fetching page $_currentPage...');
+        // print('Scroll position: ${_scrollController.position.pixels}');
+      }
     }
+    // print('Fetching page $_currentPage...');
+    // print('Scroll position: ${_scrollController.position.pixels}');
   }
 
   @override
@@ -101,15 +127,38 @@ class _UserListScreenState extends State<UserListScreen> {
                 message: _errorMessage!,
                 onRetry: () => _fetchUsers(isRefresh: true),
               )
-            : ListView.builder(
-                controller: _scrollController,
-                itemCount: _users.length + (_hasMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == _users.length && _hasMore) {
-                    return const LoadingIndicator();
-                  }
-                  // Return the user list item
-                  return UserListItem(user: _users[index]);
+            //  : ListView.builder(
+            //   controller: _scrollController,
+            //   itemCount: _users.length + (_hasMore ? 1 : 0),
+            //   itemBuilder: (context, index) {
+            //     if (index == _users.length && _hasMore) {
+            //       return const LoadingIndicator();
+            //     }
+            //     return UserListItem(user: _users[index]);
+            //   },
+            // ),
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight + 1,
+                      ),
+                      child: Column(
+                        children: List.generate(
+                          _users.length + (_hasMore ? 1 : 0),
+                          (index) {
+                            if (index == _users.length && _hasMore) {
+                              return const LoadingIndicator();
+                            }
+                            return UserListItem(user: _users[index]);
+                          },
+                        ),
+                      ),
+                    ),
+                  );
                 },
               ),
       ),
