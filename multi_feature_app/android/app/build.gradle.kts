@@ -21,7 +21,7 @@ dependencies {
 }
 
 android {
-    namespace = "com.example.multi_feature_app"
+    namespace = "com.shan.multi_feature_app"
     compileSdk = 34
     ndkVersion = "27.0.12077973"
 
