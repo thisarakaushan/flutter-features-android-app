@@ -34,6 +34,19 @@ A Flutter app that fetches and displays users from a public API with profile pic
 
 ---
 
+### 3. [NotifyMe App](https://github.com/thisarakaushan/flutter-features-android-app/tree/main/notifyme)
+
+A notification-based app that integrates Firebase Cloud Messaging (FCM) and local notifications.
+
+- 🔔 Push & local notifications using Firebase  
+- 🔄 Toggle to enable/disable notifications  
+- 📨 Simulated email notification sender  
+- 📲 Foreground & background FCM handling  
+- 🎯 Cancel/reset notification features  
+
+> 📦 Path: `notify_me/`
+
+---
 
 Explore the full README and setup instructions inside the project folders above.
 
