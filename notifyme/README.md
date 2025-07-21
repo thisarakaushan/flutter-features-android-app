@@ -2,6 +2,8 @@
 
 Notify Me is a Flutter-based mobile app that integrates **local** and **push notifications** using Firebase Cloud Messaging (FCM). It demonstrates managing notification preferences, viewing details, and simulating email alerts—all wrapped in a clean UI.
 
+Releasse apk can download using: [release apk](https://drive.google.com/file/d/1UC-tP-dQKt7GnJZOYoDVeREX53QgcSNW/view?usp=sharing)
+
 ---
 
 ## 📦 Features
@@ -34,14 +36,12 @@ Notify Me is a Flutter-based mobile app that integrates **local** and **push not
 ```bash
 git clone https://github.com/your-username/notify_me.git
 cd notify_me
-
 ```
 
 ### 2. Install Flutter Packages
 
 ```bash
 flutter pub get
-
 ```
 
 ### 3. Firebase Setup
@@ -49,6 +49,7 @@ flutter pub get
  - Go to Firebase Console
  - Create a project and enable Cloud Messaging
  - Download ```google-services.json``` and place it in:
+  
     ```
     android/app/src/main/google-services.json
     ```
@@ -77,12 +78,13 @@ android {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
+
 ```
 ✅ This ensures compatibility with:
 
-    - ```flutter_local_notifications```
-    - ```shared_preferences_android```
-    - ```permission_handler_android``
+- ```flutter_local_notifications```
+- ```shared_preferences_android```
+- ```permission_handler_android```
 
 ### 5. Run the App
 
@@ -94,6 +96,7 @@ flutter run
 
 You should see the app start in your connected device or emulator.
 
+--- 
 
 ## 🗂️ Folder Structure
 
@@ -142,6 +145,9 @@ notify_me/
 
 ```
 
+---
+
+
 ## 🧪 Firebase Cloud Messaging Testing
 
 ### 🔘 1. Get Device Token
@@ -150,7 +156,6 @@ Launch the app. In logs (VS Code or terminal), you’ll see:
 
 ```
 FCM Token: <your-token>
-
 ```
 
 Try following code after FCM initialized.
@@ -158,29 +163,34 @@ Try following code after FCM initialized.
 ```
 String? token = await FirebaseMessaging.instance.getToken();
 print('FCM Token: $token');
-
 ```
 
 ### 📤 2. Send Test Message
 
-    1. Go to Firebase Console → Cloud Messaging
-    2. Click "Send Message"
-    3. Choose "Test on device" and paste the token
-    4. Click Test
+1. Go to Firebase Console → Cloud Messaging
+2. Click "Send Message"
+3. Choose "Test on device" and paste the token
+4. Click Test
 
 ### ✅ 3. Confirm Behavior
 
-    - Foreground: Message handled via ```onMessage```
-    - Background/Killed: Message shows as notification (handled by OS)
+- Foreground: Message handled via ```onMessage```
+- Background/Killed: Message shows as notification (handled by OS)
 
 ### 🔁 Cancel All Notifications
 
 In the app:
 
-    - Go to Settings
-    - Tap Reset / Clear Notifications
-    - This triggers:
+- Go to Settings
+- Tap Reset / Clear Notifications
+- This triggers:
     ```
     flutterLocalNotificationsPlugin.cancelAll();
     ```
-    This clears all active notifications from system tray.
+This clears all active notifications from system tray.
+
+----
+
+## 🙋‍♂️ Contributions
+Feel free to fork and open pull requests. Contributions and feedback are welcome!
+
