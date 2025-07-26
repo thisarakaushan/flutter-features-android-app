@@ -48,6 +48,15 @@ A notification-based app that integrates Firebase Cloud Messaging (FCM) and loca
 
 ---
 
+### 4. [Simple Calculator](https://github.com/thisarakaushan/flutter-features-android-app/tree/main/simple_calculator)
+
+A simple calculator app that integrates getx state management.
+
+
+> 📦 Path: `simple_calculator/`
+
+---
+
 Explore the full README and setup instructions inside the project folders above.
 
 ---
