@@ -57,6 +57,15 @@ A simple calculator app that integrates getx state management.
 
 ---
 
+### 5. [To-Do App](https://github.com/thisarakaushan/flutter-features-android-app/tree/main/todo_app)
+
+A To-Do app that integrates getx state management.
+
+
+> 📦 Path: `todo_app/`
+
+---
+
 Explore the full README and setup instructions inside the project folders above.
 
 ---
