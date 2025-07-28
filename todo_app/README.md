@@ -13,7 +13,6 @@ A simple and elegant Todo application built with Flutter and GetX state manageme
 - ✅ Responsive UI: Clean Material Design interface
 
 ## 🚀 Screenshots
-[Add screenshots here]
 
 | Task List Screen | Task Details Screen | Add Task Dialog | Delete Task Dialog |
 |------------------|---------------------|-----------------|--------------------|
@@ -95,7 +94,7 @@ cd flutter-todo-getx
 ### Install Dependencies
 ```
 flutter pub get
-``
+```
 
 ### Run the App
 ```
@@ -125,7 +124,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/app_icon.png
-``
+```
 
 ## 🏗️ Architecture Overview
 
@@ -190,10 +189,10 @@ Get.back();
 ```
 
 ## 🚀 Building for Production
-Android APK [Download here]()
+Android APK [Download here](https://drive.google.com/file/d/1aIzcar3JWlwHxXNivL9J9u_1AZWQ_slK/view?usp=sharing)
 ```
 flutter build apk --release
-``
+```
 
 ## 🔄 App Flow
 
