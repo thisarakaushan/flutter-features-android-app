@@ -66,6 +66,15 @@ A To-Do app that integrates getx state management.
 
 ---
 
+### 6. [State Management Demo App](https://github.com/thisarakaushan/flutter-features-android-app/tree/main/state_management)
+
+This project is a comprehensive overview of Flutter state management with a sample project.
+
+
+> 📦 Path: `state_management/`
+
+----
+
 Explore the full README and setup instructions inside the project folders above.
 
 ---
