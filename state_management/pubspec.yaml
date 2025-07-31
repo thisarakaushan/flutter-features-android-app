@@ -1,0 +1,59 @@
+name: state_management
+description: "A comprehensive Flutter project demonstrating various state management solutions."
+
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Provider
+  provider: ^6.1.5
+
+  # BLoC
+  flutter_bloc: ^9.1.1
+
+  # Riverpod
+  flutter_riverpod: ^2.6.1
+
+  # GetX
+  get: ^4.7.2
+
+  # Redux
+  flutter_redux: ^0.10.0
+  redux: ^5.0.0
+
+  # MobX
+  mobx: ^2.5.0
+  flutter_mobx: ^2.3.0
+
+  # Analysis & Benchmarking
+  fl_chart: ^0.65.0
+  shared_preferences: ^2.2.2
+  collection: ^1.17.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+  # Code generator
+  build_runner: ^2.4.8
+
+  # Specific code generator for MobX
+  mobx_codegen: ^2.4.0
+
+
+flutter:
+
+  uses-material-design: true
+
