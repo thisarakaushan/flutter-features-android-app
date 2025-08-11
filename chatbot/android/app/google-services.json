@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "655204184640",
+    "firebase_url": "https://notifyme-8d757-default-rtdb.firebaseio.com",
+    "project_id": "notifyme-8d757",
+    "storage_bucket": "notifyme-8d757.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:655204184640:android:7f5988b646e7383ee925a5",
+        "android_client_info": {
+          "package_name": "com.example.chatbot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfcJ2IvUKC2WoNvvIQZZGTR9dasnUshp8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
