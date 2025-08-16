@@ -27,7 +27,7 @@ A Flutter-based AI chatbot app integrating Gemini API for natural language proce
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/yourusername/flutter-ai-chatbot.git
+   git clone git@github.com:thisarakaushan/flutter-features-android-app.git
    cd chatbot
    ```
 
@@ -98,4 +98,5 @@ pubspec.yaml           # Dependencies and assets config
 - ```cloud_firestore```
 - ```http```
 - ```file_picker``` (if using file/image upload)
+
 - Any Gemini or Google AI packages if available

@@ -73,6 +73,15 @@ This project is a comprehensive overview of Flutter state management with a samp
 
 > 📦 Path: `state_management/`
 
+---
+
+### 7. [Chatbot App](https://github.com/thisarakaushan/flutter-features-android-app/tree/main/chatbot)
+
+This project is a sample Flutter AI chatbot using the Gemini api support.
+
+
+> 📦 Path: `chatbot/`
+
 ----
 
 Explore the full README and setup instructions inside the project folders above.
