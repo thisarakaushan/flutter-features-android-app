@@ -25,13 +25,17 @@ class ModuleAdapter extends TypeAdapter<Module> {
       localImagePath: fields[5] as String?,
       lastUpdated: fields[6] as DateTime,
       pendingSync: fields[7] as bool,
+      pdfUrl: fields[8] as String?,
+      localPdfPath: fields[9] as String?,
+      videoUrl: fields[10] as String?,
+      localVideoPath: fields[11] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Module obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +51,15 @@ class ModuleAdapter extends TypeAdapter<Module> {
       ..writeByte(6)
       ..write(obj.lastUpdated)
       ..writeByte(7)
-      ..write(obj.pendingSync);
+      ..write(obj.pendingSync)
+      ..writeByte(8)
+      ..write(obj.pdfUrl)
+      ..writeByte(9)
+      ..write(obj.localPdfPath)
+      ..writeByte(10)
+      ..write(obj.videoUrl)
+      ..writeByte(11)
+      ..write(obj.localVideoPath);
   }
 
   @override

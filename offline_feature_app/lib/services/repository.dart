@@ -1,7 +1,9 @@
+// import 'package:cloud_firestore/cloud_firestore.dart';
+import '../utils/connectivity_util.dart';
 import 'hive_service.dart';
 import 'firebase_service.dart';
 import '../models/module.dart';
-import '../utils/connectivity_util.dart';
+import '../models/quiz_question.dart';
 
 class Repository {
   final HiveService _hive = HiveService();
@@ -19,9 +21,31 @@ class Repository {
 
   Future<List<Module>> getModules() async {
     if (!_isInitialized) {
-      await init(); // Ensure initialized
+      await init();
     }
-    return _hive.getModules();
+    final modules = _hive.getModules();
+    if (modules.isEmpty) {
+      final dummyModule = Module(
+        id: 'dummy_1',
+        title: 'Offline Sample Module',
+        content: 'This is a sample module for offline use.',
+        imageUrl: 'https://picsum.photos/200',
+        pdfUrl:
+            'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
+        quizQuestions: [
+          QuizQuestion(
+            question: 'What is 2+2?',
+            options: ['3', '4', '5'],
+            correctIndex: 1,
+          ),
+        ],
+        lastUpdated: DateTime.now(),
+      );
+      await _hive.addOrUpdateModule(dummyModule);
+      return [dummyModule];
+    }
+    return modules;
   }
 
   Future<void> sync() async {
@@ -32,34 +56,49 @@ class Repository {
       print('No connection, skipping sync');
       return;
     }
+    if (_hive.moduleBox == null) {
+      print('moduleBox not initialized, cannot sync');
+      return;
+    }
 
     try {
       // Pull from Firebase
       final remoteModules = await _firebase.fetchModules();
       for (var remote in remoteModules) {
-        final local = _hive.moduleBox?.get(remote.id);
+        final local = _hive.moduleBox!.get(remote.id);
         if (local == null || remote.lastUpdated.isAfter(local.lastUpdated)) {
           try {
-            remote.localImagePath = await _hive.downloadImage(
-              remote.imageUrl,
-              remote.id,
-            );
+            if (remote.imageUrl.isNotEmpty) {
+              remote.localImagePath = await _hive.downloadImage(
+                remote.imageUrl,
+                remote.id,
+              );
+            }
+            if (remote.pdfUrl != null && remote.pdfUrl!.isNotEmpty) {
+              remote.localPdfPath = await _hive.downloadPdf(
+                remote.pdfUrl!,
+                remote.id,
+              );
+            }
+            if (remote.videoUrl != null && remote.videoUrl!.isNotEmpty) {
+              remote.localVideoPath = await _hive.downloadVideo(
+                remote.videoUrl!,
+                remote.id,
+              );
+            }
           } catch (e) {
-            print('Failed to download image for module ${remote.id}: $e');
+            print('Failed to download assets for module ${remote.id}: $e');
           }
           await _hive.addOrUpdateModule(remote);
         }
       }
 
       // Push pending quiz submissions
-      if (_hive.moduleBox != null) {
-        for (var local in _hive.getModules()) {
-          if (local.pendingSync) {
-            // For demo, assume quiz score is stored; in real app, use separate queue
-            // await _firebase.uploadQuizResponse(local.id, local.score); // Add score field if needed
-            local.pendingSync = false;
-            await local.save();
-          }
+      for (var local in _hive.getModules()) {
+        if (local.pendingSync) {
+          await _firebase.uploadQuizResponse(local.id, 0); // Placeholder score
+          local.pendingSync = false;
+          await local.save();
         }
       }
     } catch (e) {

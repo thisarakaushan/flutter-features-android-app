@@ -18,7 +18,14 @@ class HiveService {
       if (!Hive.isAdapterRegistered(QuizQuestionAdapter().typeId)) {
         Hive.registerAdapter(QuizQuestionAdapter());
       }
-      moduleBox = await Hive.openBox<Module>('modules');
+      try {
+        moduleBox = await Hive.openBox<Module>('modules');
+      } catch (e) {
+        print('Error opening Hive box: $e');
+        // Clear box if deserialization fails
+        await Hive.deleteBoxFromDisk('modules');
+        moduleBox = await Hive.openBox<Module>('modules');
+      }
     } catch (e) {
       print('Error initializing Hive: $e');
       rethrow;
@@ -40,19 +47,31 @@ class HiveService {
     return moduleBox!.values.toList();
   }
 
-  Future<String> downloadImage(String url, String id) async {
+  Future<String> downloadFile(String url, String id, String extension) async {
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final dir = await getApplicationDocumentsDirectory();
-        final path = '${dir.path}/$id.jpg';
+        final path = '${dir.path}/$id.$extension';
         await File(path).writeAsBytes(response.bodyBytes);
         return path;
       }
-      throw Exception('Download failed');
+      throw Exception('Download failed for $extension');
     } catch (e) {
-      print('Error downloading image: $e');
+      print('Error downloading $extension: $e');
       rethrow;
     }
+  }
+
+  Future<String> downloadImage(String url, String id) async {
+    return downloadFile(url, id, 'jpg');
+  }
+
+  Future<String> downloadPdf(String url, String id) async {
+    return downloadFile(url, id, 'pdf');
+  }
+
+  Future<String> downloadVideo(String url, String id) async {
+    return downloadFile(url, id, 'mp4');
   }
 }

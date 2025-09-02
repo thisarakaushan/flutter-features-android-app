@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../models/module.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:video_player/video_player.dart';
 import '../services/repository.dart';
+import '../models/module.dart';
 
 class ModuleScreen extends StatefulWidget {
   final Module module;
@@ -10,61 +12,166 @@ class ModuleScreen extends StatefulWidget {
   const ModuleScreen({super.key, required this.module, required this.repo});
 
   @override
-  // ignore: library_private_types_in_public_api
   _ModuleScreenState createState() => _ModuleScreenState();
 }
 
 class _ModuleScreenState extends State<ModuleScreen> {
-  int? _selectedAnswer;
-  int _score = 0;
+  VideoPlayerController? _videoController;
+  bool _isVideoInitialized = false;
+  int _selectedAnswer = -1;
+  bool _isSubmitted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideo();
+  }
+
+  void _initializeVideo() {
+    if (widget.module.videoUrl == null &&
+        widget.module.localVideoPath == null) {
+      print('No video available for module ${widget.module.id}');
+      return;
+    }
+    final videoSource = widget.module.localVideoPath ?? widget.module.videoUrl!;
+    _videoController = videoSource.startsWith('http')
+        ? VideoPlayerController.networkUrl(Uri.parse(videoSource))
+        : VideoPlayerController.file(File(videoSource));
+    _videoController!
+        .initialize()
+        .then((_) {
+          setState(() {
+            _isVideoInitialized = true;
+          });
+        })
+        .catchError((e) {
+          print('Error initializing video: $e');
+          setState(() {
+            _isVideoInitialized = false;
+          });
+        });
+  }
+
+  @override
+  void dispose() {
+    _videoController?.dispose();
+    super.dispose();
+  }
+
+  void _submitQuiz(int correctIndex) {
+    setState(() {
+      _isSubmitted = true;
+      final score = _selectedAnswer == correctIndex ? 100 : 0;
+      widget.repo.submitQuizResponse(widget.module.id, score);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final question = widget.module.quizQuestions.isNotEmpty
+        ? widget.module.quizQuestions[0]
+        : null;
+
     return Scaffold(
       appBar: AppBar(title: Text(widget.module.title)),
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(widget.module.content),
-            ),
+            // Image
             if (widget.module.localImagePath != null)
-              Image.file(File(widget.module.localImagePath!))
-            else
+              Image.file(
+                File(widget.module.localImagePath!),
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              )
+            else if (widget.module.imageUrl.isNotEmpty)
               Image.network(
                 widget.module.imageUrl,
-                errorBuilder: (_, __, ___) => Text('Image offline'),
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
               ),
-            if (widget.module.quizQuestions.isNotEmpty) ...[
-              Text('Quiz: ${widget.module.quizQuestions[0].question}'),
-              ...widget.module.quizQuestions[0].options.asMap().entries.map(
-                (e) => RadioListTile<int>(
-                  title: Text(e.value),
-                  value: e.key,
-                  groupValue: _selectedAnswer,
-                  onChanged: (v) => setState(() => _selectedAnswer = v),
+            // Content
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(widget.module.content),
+            ),
+            // PDF
+            if (widget.module.localPdfPath != null)
+              Container(
+                height: 300,
+                child: PDFView(
+                  filePath: widget.module.localPdfPath!,
+                  onError: (error) => print('PDF error: $error'),
                 ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (_selectedAnswer ==
-                      widget.module.quizQuestions[0].correctIndex) {
-                    _score = 1;
-                  }
-                  await widget.repo.submitQuizResponse(
-                    widget.module.id,
-                    _score,
-                  );
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Score: $_score - Saved (syncs later)'),
+              )
+            else if (widget.module.pdfUrl != null &&
+                widget.module.pdfUrl!.isNotEmpty)
+              Text('PDF not downloaded yet. Sync to download.')
+            else
+              Text('No PDF available.'),
+            // Video
+            if (_isVideoInitialized && _videoController != null)
+              Column(
+                children: [
+                  AspectRatio(
+                    aspectRatio: _videoController!.value.aspectRatio,
+                    child: VideoPlayer(_videoController!),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _videoController!.value.isPlaying
+                            ? _videoController!.pause()
+                            : _videoController!.play();
+                      });
+                    },
+                    child: Text(
+                      _videoController!.value.isPlaying ? 'Pause' : 'Play',
                     ),
-                  );
-                },
-                child: Text('Submit'),
+                  ),
+                ],
+              )
+            else
+              Text('Video not available.'),
+            // Quiz
+            if (question != null) ...[
+              Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text('Quiz: ${question.question}'),
               ),
+              ...question.options.asMap().entries.map((entry) {
+                int idx = entry.key;
+                String option = entry.value;
+                return RadioListTile<int>(
+                  title: Text(option),
+                  value: idx,
+                  groupValue: _selectedAnswer,
+                  onChanged: _isSubmitted
+                      ? null
+                      : (value) => setState(() => _selectedAnswer = value!),
+                );
+              }).toList(),
+              if (!_isSubmitted)
+                ElevatedButton(
+                  onPressed: _selectedAnswer >= 0
+                      ? () => _submitQuiz(question.correctIndex)
+                      : null,
+                  child: Text('Submit'),
+                ),
+              if (_isSubmitted)
+                Text(
+                  _selectedAnswer == question.correctIndex
+                      ? 'Correct!'
+                      : 'Incorrect. Try again.',
+                  style: TextStyle(
+                    color: _selectedAnswer == question.correctIndex
+                        ? Colors.green
+                        : Colors.red,
+                  ),
+                ),
             ],
           ],
         ),
