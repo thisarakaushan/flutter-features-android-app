@@ -20,14 +20,15 @@ class HiveService {
       }
       try {
         moduleBox = await Hive.openBox<Module>('modules');
-      } catch (e) {
-        print('Error opening Hive box: $e');
-        // Clear box if deserialization fails
+        print('Hive box "modules" opened successfully');
+      } catch (e, stackTrace) {
+        print('Error opening Hive box: $e\n$stackTrace');
         await Hive.deleteBoxFromDisk('modules');
         moduleBox = await Hive.openBox<Module>('modules');
+        print('Hive box "modules" recreated after error');
       }
-    } catch (e) {
-      print('Error initializing Hive: $e');
+    } catch (e, stackTrace) {
+      print('Error initializing Hive: $e\n$stackTrace');
       rethrow;
     }
   }
@@ -37,6 +38,7 @@ class HiveService {
       throw Exception('Hive moduleBox not initialized');
     }
     await moduleBox!.put(module.id, module);
+    print('Module ${module.id} added or updated in Hive');
   }
 
   List<Module> getModules() {
@@ -47,18 +49,58 @@ class HiveService {
     return moduleBox!.values.toList();
   }
 
-  Future<String> downloadFile(String url, String id, String extension) async {
+  Future<String> downloadFile(
+    String url,
+    String id,
+    String extension, [
+    Function(double)? onProgress,
+  ]) async {
+    print('Starting download: $url for module $id (extension: $extension)');
+    // try {
+    //   final response = await http.get(Uri.parse(url));
+    //   if (response.statusCode == 200) {
+    //     final dir = await getApplicationDocumentsDirectory();
+    //     final path = '${dir.path}/$id.$extension';
+    //     await File(path).writeAsBytes(response.bodyBytes);
+    //     return path;
+    //   }
+    //   throw Exception('Download failed for $extension');
+    // } catch (e) {
+    //   print('Error downloading $extension: $e');
+    //   rethrow;
+    // }
     try {
-      final response = await http.get(Uri.parse(url));
+      final request = http.Request('GET', Uri.parse(url));
+      final response = await http.Client().send(request);
       if (response.statusCode == 200) {
         final dir = await getApplicationDocumentsDirectory();
         final path = '${dir.path}/$id.$extension';
-        await File(path).writeAsBytes(response.bodyBytes);
-        return path;
+        final file = File(path);
+        final sink = file.openWrite();
+        final totalBytes = response.contentLength ?? 0;
+        int receivedBytes = 0;
+
+        await for (var chunk in response.stream) {
+          receivedBytes += chunk.length;
+          if (totalBytes > 0 && onProgress != null) {
+            onProgress(receivedBytes / totalBytes);
+          }
+          sink.add(chunk);
+        }
+        await sink.close();
+        if (await file.exists()) {
+          print('File downloaded successfully to: $path');
+          return path;
+        } else {
+          print('File does not exist after download at: $path');
+          throw Exception('Downloaded file not found');
+        }
+      } else {
+        print('Download failed with status code: ${response.statusCode}');
+        throw Exception('Download failed with status: ${response.statusCode}');
       }
-      throw Exception('Download failed for $extension');
-    } catch (e) {
-      print('Error downloading $extension: $e');
+    } catch (e, stackTrace) {
+      print('Error downloading $extension for module $id: $e\n$stackTrace');
       rethrow;
     }
   }
@@ -67,11 +109,19 @@ class HiveService {
     return downloadFile(url, id, 'jpg');
   }
 
-  Future<String> downloadPdf(String url, String id) async {
-    return downloadFile(url, id, 'pdf');
+  Future<String> downloadPdf(
+    String url,
+    String id, [
+    Function(double)? onProgress,
+  ]) async {
+    return downloadFile(url, id, 'pdf', onProgress);
   }
 
-  Future<String> downloadVideo(String url, String id) async {
-    return downloadFile(url, id, 'mp4');
+  Future<String> downloadVideo(
+    String url,
+    String id, [
+    Function(double)? onProgress,
+  ]) async {
+    return downloadFile(url, id, 'mp4', onProgress);
   }
 }

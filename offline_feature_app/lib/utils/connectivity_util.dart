@@ -5,3 +5,5 @@ Future<bool> isConnected() async {
   // ignore: unrelated_type_equality_checks
   return connectivityResult != ConnectivityResult.none;
 }
+
+// network health - check (ping)

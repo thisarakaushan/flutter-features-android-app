@@ -1,4 +1,6 @@
 // import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
+
 import '../utils/connectivity_util.dart';
 import 'hive_service.dart';
 import 'firebase_service.dart';
@@ -14,8 +16,10 @@ class Repository {
     try {
       await _hive.init();
       _isInitialized = true;
-    } catch (e) {
-      print('Error initializing repository: $e');
+      print('Repository initialized successfully');
+    } catch (e, stackTrace) {
+      print('Error initializing repository: $e\n$stackTrace');
+      throw Exception('Failed to initialize repository: $e');
     }
   }
 
@@ -25,6 +29,7 @@ class Repository {
     }
     final modules = _hive.getModules();
     if (modules.isEmpty) {
+      print('No modules in Hive, creating dummy module');
       final dummyModule = Module(
         id: 'dummy_1',
         title: 'Offline Sample Module',
@@ -42,7 +47,28 @@ class Repository {
         ],
         lastUpdated: DateTime.now(),
       );
+      // Note: Not downloading assets automatically for dummy module
+      // User will download PDF/video manually in ModuleScreen
+      try {
+        if (dummyModule.imageUrl.isNotEmpty &&
+            dummyModule.localImagePath == null) {
+          print('Downloading image for dummy module: ${dummyModule.imageUrl}');
+          final path = await _hive.downloadImage(
+            dummyModule.imageUrl,
+            dummyModule.id,
+          );
+          if (await File(path).exists()) {
+            dummyModule.localImagePath = path;
+            print('Image downloaded to: $path');
+          } else {
+            print('Image file does not exist at: $path');
+          }
+        }
+      } catch (e, stackTrace) {
+        print('Failed to download dummy module image: $e\n$stackTrace');
+      }
       await _hive.addOrUpdateModule(dummyModule);
+      print('Dummy module saved to Hive');
       return [dummyModule];
     }
     return modules;
@@ -62,47 +88,72 @@ class Repository {
     }
 
     try {
+      print('Starting sync with Firestore');
       // Pull from Firebase
       final remoteModules = await _firebase.fetchModules();
+      print('Fetched ${remoteModules.length} modules from Firestore');
       for (var remote in remoteModules) {
         final local = _hive.moduleBox!.get(remote.id);
         if (local == null || remote.lastUpdated.isAfter(local.lastUpdated)) {
           try {
-            if (remote.imageUrl.isNotEmpty) {
-              remote.localImagePath = await _hive.downloadImage(
+            // if (remote.imageUrl.isNotEmpty) {
+            //   remote.localImagePath = await _hive.downloadImage(
+            //     remote.imageUrl,
+            //     remote.id,
+            //   );
+            // }
+            // Image
+            if (remote.imageUrl.isNotEmpty && remote.localImagePath == null) {
+              print(
+                'Downloading image for module ${remote.id}: ${remote.imageUrl}',
+              );
+              final path = await _hive.downloadImage(
                 remote.imageUrl,
                 remote.id,
               );
+              if (await File(path).exists()) {
+                remote.localImagePath = path;
+                print('Image downloaded to: $path');
+              } else {
+                print('Image file does not exist at: $path');
+              }
             }
-            if (remote.pdfUrl != null && remote.pdfUrl!.isNotEmpty) {
-              remote.localPdfPath = await _hive.downloadPdf(
-                remote.pdfUrl!,
-                remote.id,
-              );
-            }
-            if (remote.videoUrl != null && remote.videoUrl!.isNotEmpty) {
-              remote.localVideoPath = await _hive.downloadVideo(
-                remote.videoUrl!,
-                remote.id,
-              );
-            }
-          } catch (e) {
-            print('Failed to download assets for module ${remote.id}: $e');
+            // PDF and video downloads are handled manually in ModuleScreen
+            // So, no need to download them automatically
+            // if (remote.pdfUrl != null && remote.pdfUrl!.isNotEmpty) {
+            //   remote.localPdfPath = await _hive.downloadPdf(
+            //     remote.pdfUrl!,
+            //     remote.id,
+            //   );
+            // }
+            // if (remote.videoUrl != null && remote.videoUrl!.isNotEmpty) {
+            //   remote.localVideoPath = await _hive.downloadVideo(
+            //     remote.videoUrl!,
+            //     remote.id,
+            //   );
+            // }
+          } catch (e, stackTrace) {
+            print(
+              'Failed to download assets for module ${remote.id}: $e\n$stackTrace',
+            );
           }
           await _hive.addOrUpdateModule(remote);
+          print('Module ${remote.id} saved to Hive');
         }
       }
 
       // Push pending quiz submissions
       for (var local in _hive.getModules()) {
         if (local.pendingSync) {
+          print('Uploading quiz response for module ${local.id}');
           await _firebase.uploadQuizResponse(local.id, 0); // Placeholder score
           local.pendingSync = false;
           await local.save();
+          print('Quiz response for module ${local.id} synced');
         }
       }
-    } catch (e) {
-      print('Sync error: $e');
+    } catch (e, stackTrace) {
+      print('Sync error: $e\n$stackTrace');
     }
   }
 
@@ -120,5 +171,54 @@ class Repository {
       print('Module $moduleId not found in Hive');
     }
     if (await isConnected()) await sync();
+  }
+
+  // Download pdf
+  Future<String> downloadPdf(
+    String url,
+    String id, [
+    Function(double)? onProgress,
+  ]) async {
+    print('Downloading PDF: $url for module $id');
+    try {
+      final path = await _hive.downloadPdf(url, id, onProgress);
+      if (await File(path).exists()) {
+        print('PDF downloaded successfully to: $path');
+        return path;
+      } else {
+        print('PDF file does not exist at: $path');
+        throw Exception('Downloaded PDF file not found');
+      }
+    } catch (e, stackTrace) {
+      print('PDF download failed: $e\n$stackTrace');
+      rethrow;
+    }
+  }
+
+  // Video Download
+  Future<String> downloadVideo(
+    String url,
+    String id, [
+    Function(double)? onProgress,
+  ]) async {
+    print('Downloading video: $url for module $id');
+    try {
+      final path = await _hive.downloadVideo(url, id, onProgress);
+      if (await File(path).exists()) {
+        print('Video downloaded successfully to: $path');
+        return path;
+      } else {
+        print('Video file does not exist at: $path');
+        throw Exception('Downloaded video file not found');
+      }
+    } catch (e, stackTrace) {
+      print('Video download failed: $e\n$stackTrace');
+      rethrow;
+    }
+  }
+
+  Future<void> updateModule(Module module) async {
+    print('Updating module ${module.id} in Hive');
+    await _hive.addOrUpdateModule(module);
   }
 }
